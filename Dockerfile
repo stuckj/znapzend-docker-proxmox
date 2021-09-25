@@ -49,17 +49,21 @@ RUN \
   && echo ${PROXMOX_GPG_URL} --- ${PROXMOX_GPG_FILE} \
   && wget ${PROXMOX_GPG_URL} \
   && mv ${PROXMOX_GPG_FILE} /etc/apt/trusted.gpg.d \
+  
   # Add the proxmox repo.
   && echo "deb http://download.proxmox.com/debian/pve ${DEBIAN_VERSION} pve-no-subscription" > /etc/apt/sources.list.d/pve-no-subscription.list \
-  # Then install everything we need to run the container.
+  
+  # Then install everything we need to run the container (except EXCLUDE zfs-dkms since we don't need it and it will fail to build).
   && apt update && apt install -y \
   $([ -z ${ZFSUTILS_VERSION} ] && echo "zfsutils-linux" || echo "zfsutils-linux=${ZFSUTILS_VERSION}") \
+  zfs-dkms- \
   nano \
   vim \
   perl \
   ssh \
   mbuffer \
-  # Cleanup.
+  
+  # Clean up
   && rm -rf /var/lib/apt/lists/*
 
 RUN \
