@@ -35,8 +35,13 @@ ARG PROXMOX_GPG_URL=http://download.proxmox.com/debian/${PROXMOX_GPG_FILE}
 
 # Add the debian contrib repos. Needed for zfs.
 RUN \
-  mv /etc/apt/sources.list /etc/apt/sources.list.bak \
-  && cat /etc/apt/sources.list.bak | sed -e "s/main$/main contrib/" > /etc/apt/sources.list
+  if [ -f /etc/apt/sources.list ]; then \
+    mv /etc/apt/sources.list /etc/apt/sources.list.bak \
+    && cat /etc/apt/sources.list.bak | sed -e "s/main$/main contrib/" > /etc/apt/sources.list; \
+  else \
+    mv /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list.d/debian.sources.bak \
+    && cat /etc/apt/sources.list.d/debian.sources.bak | sed -e "s/main$/main contrib/" > /etc/apt/sources.list.d/debian.sources; \
+  fi
 
 RUN \
   # Install the proxmox repo keys...
