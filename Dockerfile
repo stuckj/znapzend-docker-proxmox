@@ -19,6 +19,9 @@ RUN \
   git clone https://github.com/oetiker/znapzend.git .
 
 RUN \
+  git checkout tags/v0.21.2 -b v0.21.2
+
+RUN \
   ./bootstrap.sh && \
   ./configure --prefix=/opt/znapzend && \
   make && \

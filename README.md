@@ -7,6 +7,10 @@ There are multiple versions of this container based on the proxmox VE version an
 
 You can see the details on how to use znapzend in the official readme on github here: https://github.com/oetiker/znapzend
 
+Repo for this container: https://github.com/stuckj/znapzend-docker-proxmox
+
+**NOTE:** This is using version 0.21.2 of znapzend as there is currently a [bug](https://github.com/oetiker/znapzend/issues/650) in 0.22.0 causing auto-creation of sub-datasets to fail on sending snapshots to destinations. I'll change this if this gets fixed.
+
 ---
 
 **NOTE:** To override the command (e.g., to send options to znapzend), you must send the options and znapzend command as one string since the entrypoint is a bash shell. And, you must pass `--logto=/dev/stdout` if you want logs to still show up in the docker logs for the container.
