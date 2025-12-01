@@ -46,33 +46,36 @@ RUN \
     && cat /etc/apt/sources.list.d/debian.sources.bak | sed -e "s/main$/main contrib/" > /etc/apt/sources.list.d/debian.sources; \
   fi
 
-RUN \
-  # Install the proxmox repo keys...
-  apt update && apt install -y \
-  wget \
-  gnupg \
-  && wget http://download.proxmox.com/debian/key.asc \
-  && apt-key add key.asc \
-  && rm key.asc \
-  && echo ${PROXMOX_GPG_URL} --- ${PROXMOX_GPG_FILE} \
-  && wget ${PROXMOX_GPG_URL} \
-  && mv ${PROXMOX_GPG_FILE} /etc/apt/trusted.gpg.d \
-  
-  # Add the proxmox repo.
-  && echo "deb http://download.proxmox.com/debian/pve ${DEBIAN_VERSION} pve-no-subscription" > /etc/apt/sources.list.d/pve-no-subscription.list \
-  
-  # Then install everything we need to run the container (except EXCLUDE zfs-dkms since we don't need it and it will fail to build).
-  && apt update && apt install -y \
-  $([ -z ${ZFSUTILS_VERSION} ] && echo "zfsutils-linux" || echo "zfsutils-linux=${ZFSUTILS_VERSION}") \
-  zfs-dkms- \
-  nano \
-  vim \
-  perl \
-  ssh \
-  mbuffer \
-  
-  # Clean up
-  && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+    # Base tools
+    apt update; \
+    apt install -y --no-install-recommends \
+        wget \
+        gnupg \
+        ca-certificates; \
+    \
+    # Install the Proxmox repo key without apt-key (works from buster through trixie)
+    mkdir -p /usr/share/keyrings; \
+    wget -O /usr/share/keyrings/proxmox-archive-keyring.gpg "${PROXMOX_GPG_URL}"; \
+    \
+    # Add the Proxmox repo, bound to that key
+    echo "deb [signed-by=/usr/share/keyrings/proxmox-archive-keyring.gpg] \
+http://download.proxmox.com/debian/pve ${DEBIAN_VERSION} pve-no-subscription" \
+        > /etc/apt/sources.list.d/pve-no-subscription.list; \
+    \
+    # Then install everything we need to run the container
+    apt update; \
+    apt install -y \
+        $([ -z "${ZFSUTILS_VERSION}" ] && echo "zfsutils-linux" || echo "zfsutils-linux=${ZFSUTILS_VERSION}") \
+        zfs-dkms- \
+        nano \
+        vim \
+        perl \
+        ssh \
+        mbuffer; \
+    \
+    # Clean up
+    rm -rf /var/lib/apt/lists/*
 
 RUN \
   ln -s /dev/stdout /var/log/syslog
